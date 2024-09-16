@@ -1,15 +1,15 @@
 import streamlit as st
+import openai
 import os
-from openai import OpenAI
 
 # Import the PDF extractor functions from your pdf_extractor.py file
 from pdf_extractor import extract_text_from_folder, chunk_pdfs
 
-# Set the OpenAI API key from the environment variable
-#api_key = os.getenv("OPENAI_API_KEY")
+# Set the OpenAI API key from Streamlit secrets (since it's saved in the secrets section)
+api_key = st.secrets["OPENAI_API_KEY"]
 
-# Initialize the OpenAI client
-#client = OpenAI(api_key=api_key)
+# Initialize the OpenAI client with the API key
+openai.api_key = api_key
 
 # Step 1: Extract text from all PDFs in the folder (only needed for the first message)
 folder_path = "pdfs"
@@ -40,20 +40,14 @@ def query_openai(conversation_history, first_query=False):
             conversation_history = [context_message] + conversation_history
         
         # Send the request to OpenAI API
-        response = client.chat.completions.with_raw_response.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",  # You can use "gpt-3.5-turbo" or another model
             messages=conversation_history
         )
         
-        # Parse the response
-        completion = response.parse()
-
         # Access and return the message content from the response
-        if hasattr(completion.choices[0], 'message'):
-            message_content = completion.choices[0].message.content
-            return message_content.strip()
-        else:
-            return "No response generated."
+        message_content = response['choices'][0]['message']['content']
+        return message_content.strip()
 
     except Exception as e:
         return f"Error in API request: {e}"
