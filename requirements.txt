@@ -1,0 +1,3 @@
+openai
+streamlit
+PyMuPDF  # This is the fitz package for PDF processing (PyMuPDF)
